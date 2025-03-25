@@ -42,7 +42,7 @@ FrameRate <- as.numeric(dlgInput("Framerate [Frames per second]", "178")$res)
 pixelsize <- as.numeric(dlgInput("Pixelsiz [mm/px]", "0.014284")$res)
 DisplacementConversionFactor<- as.numeric(dlgInput("Conversion factor [mN/mm]: see https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0266834", "0.26")$res)
 pillarCount <- as.numeric(dlgInput("Number of pillars per EHT [1 or 2]", "1")$res)
-choice <- dlgList(choices = c("Recalculate trace", "Use existing ImageJ trace"), multiple = FALSE, title = "Select an option")$res
+choice <- dlgList(choices = c("Recalculate trace", "Use existing ImageJ trace (fallback only)"), multiple = FALSE, title = "Select an option")$res
 
 # Create empty data frames for Trace extraction
 Trace<-data.frame(dist=NA)
