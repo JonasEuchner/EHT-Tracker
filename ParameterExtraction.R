@@ -1,4 +1,4 @@
-# ParameterExtraction_v2.0.1
+# ParameterExtraction_v2.0.2
 
 # Check if all packages are available, and install it if not
 is_readr_available <- require("readr")
@@ -39,9 +39,10 @@ setwd(dir)
 FileList<-list.files(pattern="*.txt")
 
 FrameRate <- as.numeric(dlgInput("Framerate [Frames per second]", "178")$res)
-pixelsize <- as.numeric(dlgInput("Pixelsiz [mm/px]", "0.0036205")$res)
+pixelsize <- as.numeric(dlgInput("Pixelsiz [mm/px]", "0.014284")$res)
 DisplacementConversionFactor<- as.numeric(dlgInput("Conversion factor [mN/mm]: see https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0266834", "0.26")$res)
 pillarCount <- as.numeric(dlgInput("Number of pillars per EHT [1 or 2]", "1")$res)
+choice <- dlgList(choices = c("Recalculate trace", "Use existing ImageJ trace"), multiple = FALSE, title = "Select an option")$res
 
 # Create empty data frames for Trace extraction
 Trace<-data.frame(dist=NA)
@@ -52,36 +53,36 @@ colnames(output)<-c("Peak to peak [s]","Contraction duration [ms]","Time to peak
 for (i in 1:length(FileList)) {
   Pillar <- read_delim(paste(dir,FileList[i],sep="/"),";", escape_double = FALSE, trim_ws = TRUE)
   
-  # Find resting x and y position
-  medianX<-median(Pillar$xPos)
-  posXQ<-quantile(Pillar$xPos, c(0.01, 0.99))
-  minX<-as.numeric(posXQ[1])
-  maxX<-as.numeric(posXQ[2])
-  medianY<-median(Pillar$yPos)
-  posYQ<-quantile(Pillar$yPos, c(0.01, 0.99))
-  minY<-as.numeric(posYQ[1])
-  maxY<-as.numeric(posYQ[2])
-  
-  if (abs(maxX-medianX)<abs(minX-medianX)) {
-    xResting <- maxX
-  } else if (abs(maxX-medianX)>abs(minX-medianX)){
-    xResting <- minX
-  } else {
-    xResting = mean(c(maxX, minX))
+  if (grepl("^Recalculate trace", choice)) {
+    # Find resting x and y position
+    medianX<-median(Pillar$xPos)
+    posXQ<-quantile(Pillar$xPos, c(0.01, 0.99))
+    minX<-as.numeric(posXQ[1])
+    maxX<-as.numeric(posXQ[2])
+    medianY<-median(Pillar$yPos)
+    posYQ<-quantile(Pillar$yPos, c(0.01, 0.99))
+    minY<-as.numeric(posYQ[1])
+    maxY<-as.numeric(posYQ[2])
+    
+    if (abs(maxX-medianX)<abs(minX-medianX)) {
+      xResting <- maxX
+    } else {
+      xResting <- minX
+    } 
+    
+    if (abs(maxY-medianY)<abs(minY-medianY)) {
+      yResting <- maxY
+    } else {
+      yResting <- minY
+    }
+    
+    xDistance<-xResting-Pillar$xPos
+    yDistance<-yResting-Pillar$yPos
+    Pillar$dist<-sqrt(xDistance^2+yDistance^2)
+  } else{
+    Pillar$dist2<-Pillar$Distance/pixelsize
   }
   
-  if (abs(maxY-medianY)<abs(minY-medianY)) {
-    yResting <- maxY
-  } else if (abs(maxY-medianY)>abs(minY-medianY)){
-    yResting <- minY
-  } else {
-    yResting = mean(c(maxY, minY))
-  }
-  
-  xDistance<-xResting-Pillar$xPos
-  yDistance<-yResting-Pillar$yPos
-  Pillar$dist<-sqrt(xDistance^2+yDistance^2)
-
   # Apply shape-preserving smoothing filter
   smoothed_savgol <- sgolayfilt(Pillar$dist, p = 3, n = floor(floor(FrameRate)/8)*2+1)
   window_size=5
@@ -89,7 +90,7 @@ for (i in 1:length(FileList)) {
   subsets <- split(smoothed_savgol, ceiling(seq_along(1:length(smoothed_savgol)) / split_size))
   
   # Correct baseline
-    baseline_values <- numeric(window_size)
+  baseline_values <- numeric(window_size)
   for (j in 1:window_size) {
     baseline_values[j] <- quantile(subsets[[j]], probs = 0.005)
   }
@@ -151,7 +152,7 @@ for (i in 1:length(FileList)) {
   
   rise_indices <- find_all_rise(Trace_corrected$Displacement)
   fall_indices <- find_all_fall(Trace_corrected$Displacement)
-
+  
   
   fall_indices_to_keep <- fall_indices[sapply(fall_indices, function(fall_value) {
     any(rise_indices < fall_value)
@@ -282,15 +283,15 @@ for (i in 1:length(FileList)) {
       }
     }
   }
-
+  
   #store all peak information
   peaks <- data.frame(max_value = (max_values-0.5*min_values_pre-0.5*min_values_post),
                       max_idx = max_values_idx,
                       min_pre_idx = min_values_pre_idx,
                       min_post_idx = min_values_post_idx
-                      )
+  )
   peaks <- peaks[complete.cases(peaks), ]
-
+  
   Frame<-c(1:length(Trace_corrected$Displacement))
   threshold_level <- 0.05
   threshold <- threshold_level * Trace_corrected$Displacement[peaks[1,2]]
@@ -315,7 +316,7 @@ for (i in 1:length(FileList)) {
   if (is.na(peaks[m,6])) {
     peaks[m,6]<-peaks[m,4]
   }
- 
+  
   
   #Calculate all important parameters per contraction
   intermediate<-data.frame("temp"=rep(NA,length(peaks[,1])))
