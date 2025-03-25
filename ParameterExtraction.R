@@ -38,7 +38,7 @@ dir<-selectDirectory(
 setwd(dir)
 FileList<-list.files(pattern="*.txt")
 
-FrameRate <- as.numeric(dlgInput("Framerate [Frames per second]", "53.28")$res)
+FrameRate <- as.numeric(dlgInput("Framerate [Frames per second]", "178")$res)
 pixelsize <- as.numeric(dlgInput("Pixelsiz [mm/px]", "0.0036205")$res)
 DisplacementConversionFactor<- as.numeric(dlgInput("Conversion factor [mN/mm]: see https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0266834", "0.26")$res)
 pillarCount <- as.numeric(dlgInput("Number of pillars per EHT [1 or 2]", "1")$res)
@@ -83,7 +83,7 @@ for (i in 1:length(FileList)) {
   Pillar$dist<-sqrt(xDistance^2+yDistance^2)
 
   # Apply shape-preserving smoothing filter
-  smoothed_savgol <- sgolayfilt(Pillar$dist, p = 3, n = floor(floor(FrameRate)/3)*2+1)
+  smoothed_savgol <- sgolayfilt(Pillar$dist, p = 3, n = floor(floor(FrameRate)/8)*2+1)
   window_size=5
   split_size <- floor(length(smoothed_savgol) / window_size)
   subsets <- split(smoothed_savgol, ceiling(seq_along(1:length(smoothed_savgol)) / split_size))
