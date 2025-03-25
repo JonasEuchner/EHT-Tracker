@@ -80,7 +80,7 @@ for (i in 1:length(FileList)) {
     yDistance<-yResting-Pillar$yPos
     Pillar$dist<-sqrt(xDistance^2+yDistance^2)
   } else{
-    Pillar$dist2<-Pillar$Distance/pixelsize
+    Pillar$dist<-Pillar$Distance/pixelsize
   }
   
   # Apply shape-preserving smoothing filter
