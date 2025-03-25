@@ -1,5 +1,5 @@
 # Contractility analysis of engineered heart tissues
-This code was developed as a quick solution for a collaboration partner to extract meaningful parameters for EHT. As a result, standard coding practices were not strictly followed, and the code may lack documentation and optimization. Use at your own discretion. 
+This code was developed as a quick solution for a collaboration partner to extract meaningful parameters for EHT. As a result, standard coding practices were not followed, the code lacks documentation, is not optimized, and contains many hard-coded parameters. Use at your own discretion.
 
 ## Getting started
 ### ImageJ script
