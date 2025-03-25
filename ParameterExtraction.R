@@ -1,4 +1,5 @@
-# ParameterExtraction_v2.0
+# ParameterExtraction_v2.0.1
+
 # Check if all packages are available, and install it if not
 is_readr_available <- require("readr")
 if (!is_readr_available) {
